@@ -1,0 +1,265 @@
+---
+title: "DS311 - R Lab Assignment"
+author: "Kris Guan"
+date: "11/26/2022"
+output: 
+  html_document:
+    theme: united
+    highlight: tango
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Assignment 1
+
+* In this assignment, we are going to apply some of the build in data set in R for descriptive statistics analysis.
+* To earn full grade in this assignment, students need to complete the coding tasks for each question to get the result.
+* After finished all the questions, knit the document into HTML format for submission.
+
+### Question 1
+
+Using the **mtcars** data set in R, please answer the following questions.
+
+```{r}
+# Loading the data
+data(mtcars)
+
+# Head of the data set
+head(mtcars)
+```
+
+a. Report the number of variables and observations in the data set.
+
+```{r}
+# Enter your code here!
+nb_cars <- nrow(mtcars)
+nb_obs <- ncol(mtcars)
+
+# Answer:
+print(paste("There are total of", nb_cars, "variables and", nb_obs, "observations in this data set."))
+```
+"There are total of 32 variables and 11 observations in this data set."
+
+
+b. Print the summary statistics of the data set and report how many discrete and continuous variables are in the data set.
+
+```{r}
+# Enter your code here!
+summary.data.frame(mtcars)
+d <- 0
+c <- 0
+for (x in 1:ncol(mtcars)) {
+  if ((median(mtcars[,x]) - as.integer(median(mtcars[,x])) == 0))
+    d <- d+1
+  else {
+    c <- c+1
+  }
+}
+
+# Answer:
+print(paste("There are", d, "discrete variables and", c, "continuous variables in this data set."))
+```
+"There are 6 discrete variables and 5 continuous variables in this data set."
+
+
+c. Calculate the mean, variance, and standard deviation for the variable **mpg** and assign them into variable names m, v, and s. Report the results in the print statement.
+
+```{r}
+# Enter your code here!
+m <- mean(mtcars$mpg)
+v <- var(mtcars$mpg)
+s <- sd(mtcars$mpg)
+
+
+print(paste("The average of Mile Per Gallon from this data set is ", m, " with variance ", v, " and standard deviation", s, "."))
+```
+"The average of Mile Per Gallon from this data set is  20.0906 with variance 36.3241 and standard deviation 6.0269."
+
+
+d. Create two tables to summarize 1) average mpg for each cylinder class and 2) the standard deviation of mpg for each gear class.
+
+```{r}
+# Enter your code here!
+cyl <- mtcars$cyl
+cyl <- cyl[!duplicated(cyl)]
+mean_m <- c()
+for (x in cyl)
+  mean_m <- append(mean_m, mean(mtcars[mtcars$cyl == x, 1]))
+df <- as.data.frame(cbind(cyl, mean_m))
+df
+
+gear <- mtcars$gear
+gear <- gear[!duplicated(gear)]
+sd_g <- c()
+for (x in gear)
+  sd_g <- append(sd_g, sd(mtcars[mtcars$gear == x, 1]))
+df2 <- as.data.frame(cbind(gear, sd_g))
+df2
+
+
+
+```
+df
+  cyl   mean_m
+1   6 19.74286
+2   4 26.66364
+3   8 15.10000
+
+df2
+  gear     sd_g
+1    4 5.276764
+2    3 3.371618
+3    5 6.658979
+
+
+e. Create a crosstab that shows the number of observations belong to each cylinder and gear class combinations. The table should show how many observations given the car has 4 cylinders with 3 gears, 4 cylinders with 4 gears, etc. Report which combination is recorded in this data set and how many observations for this type of car.
+
+```{r}
+# Enter your code here!
+mtcars
+cyl <- mtcars$cyl
+cyl <- cyl[!duplicated(cyl)]
+gear <- mtcars$gear
+gear <- gear[!duplicated(gear)]
+vector <- c()
+for (x in cyl) {
+  for (xx in gear) {
+    vector <- append(vector, x)
+    vector <- append(vector, xx)
+    vector <- append(vector, length(mtcars[mtcars$cyl == x & mtcars$gear == xx, 1]))
+    print(paste(x, xx, length(mtcars[mtcars$cyl == x & mtcars$gear == xx, 1])))
+  }
+}
+matrix1<-matrix(toupper(vector),nrow=9, byrow = T)
+i <- 1
+tmp <- 0
+I <- 1
+for (x in 1:length(matrix1[,3])) {
+  if (tmp < as.integer(matrix1[x,3])) {
+    tmp <- as.integer(matrix1[x,3])
+    I <- i
+  }
+  i <- i + 1
+}
+
+print(paste("The most common car type in this data set is car with", matrix1[I, 1], "cylinders and", matrix1[I, 2], "gears. There are total of", matrix1[I, 3], "cars belong to this specification in the data set."))
+```
+"The most common car type in this data set is car with 8 cylinders and 3 gears. There are total of 12 cars belong to this specification in the data set."
+
+*** 
+
+### Question 2
+
+Use different visualization tools to summarize the data sets in this question.
+
+a. Using the **PlantGrowth** data set, visualize and compare the weight of the plant in the three separated group. Give labels to the title, x-axis, and y-axis on the graph. Write a paragraph to summarize your findings.
+
+```{r}
+# Load the data set
+data("PlantGrowth")
+
+# Head of the data set
+head(PlantGrowth)
+
+# Enter your code here!
+group <- PlantGrowth$group
+group <- group[!duplicated(group)]
+avg <- c()
+for (i in group) {
+  avg <- append(avg, mean(PlantGrowth[PlantGrowth$group == i ,1]))
+}
+barplot(matrix(avg), beside=T, main='Average weight by group', names.arg = group, ylab="Average weight", xlab="Group")
+
+```
+
+Result:
+
+=> I found out the average weight of trt2 group is larger than the trt1 group.
+
+
+b. Using the **mtcars** data set, plot the histogram for the column **mpg** with 10 breaks. Give labels to the title, x-axis, and y-axis on the graph. Report the most observed mpg class from the data set.
+
+```{r}
+print(mtcars)
+barplot(matrix(mtcars[, 1],nr=10), beside=T, 
+        col=c("aquamarine3","coral"))
+
+print("Most of the cars in this data set are in the class of ______ mile per gallon.")
+```
+
+
+
+c. Using the **USArrests** data set, create a pairs plot to display the correlations between the variables in the data set. Plot the scatter plot with **Murder** and **Assault**. Give labels to the title, x-axis, and y-axis on the graph. Write a paragraph to summarize your results from both plots.
+
+```{r}
+# Load the data set
+data("USArrests")
+
+# Head of the data set
+head(USArrests)
+
+# Enter your code here!
+plot(y = USArrests$Murder, x = USArrests$Assault, main = "Murder Rate vs. Assault Rate")
+
+```
+
+Result:
+
+=> Report a paragraph to summarize your findings from the plot!
+
+In the scatter plot, Assault and Murder increases at the same time.
+
+
+***
+
+### Question 3
+
+Download the housing data set from www.jaredlander.com and find out what explains the housing prices in New York City.
+
+Note: Check your working directory to make sure that you can download the data into the data folder. 
+
+```{r, echo=FALSE}
+# Load and clean the housing data set 
+download.file(url='https://www.jaredlander.com/data/housing.csv',
+              destfile='data/housing.csv', mode='wb')
+housingData <- read.csv('data/housing.csv')
+housingData <- subset(housingData, 
+                      select = c("Neighborhood", "Market.Value.per.SqFt", "Boro", "Year.Built"))
+housingData <- na.omit(housingData)                   
+```
+
+a. Create your own descriptive statistics and aggregation tables to summarize the data set and find any meaningful results between different variables in the data set.
+
+```{r}
+# Head of the cleaned data set
+head(housingData)
+
+# Enter your code here!
+str(housingData)
+min(housingData$Market.Value.per.SqFt)
+max(housingData$Market.Value.per.SqFt)
+print(housingData[housingData$Market.Value.per.SqFt == min(housingData$Market.Value.per.SqFt),3])
+print(housingData[housingData$Market.Value.per.SqFt == max(housingData$Market.Value.per.SqFt),3])
+mean(housingData$Market.Value.per.SqFt)
+```
+
+
+b. Create multiple plots to demonstrates the correlations between different variables. Remember to label all axes and give title to each graph.
+
+```{r}
+# Enter your code here!
+avg <- aggregate(housingData$Market.Value.per.SqFt, list(housingData$Boro), FUN=mean) 
+avg
+barplot(matrix(avg$x), beside=T, main='Average price for each Boro', names.arg = avg$Group.1, ylab="Average prices", xlab="Boro")
+
+
+```
+
+c. Write a summary about your findings from this exercise.
+
+=> Enter your answer here!
+
+In the bar plot, Manhattan is the most expensive average price for the boro.
